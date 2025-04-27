@@ -1,0 +1,94 @@
+.page {
+    text-align: center;
+  }
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .product-card {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 5px;
+  }
+  
+  .contact-form {
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .contact-form input,
+  .contact-form textarea {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .contact-form button {
+    background-color: #007bff;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .contact-form button:hover {
+    background-color: #0056b3;
+  }
+  .Projects-title{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+  }
+  .Projects::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .Projects {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  }
+  /* Add this CSS to make the Projects container scroll horizontally */
+  .Projects {
+    display: flex;
+    overflow: auto;
+    white-space: pre-line;
+  }
+  .Projects > * {
+    flex-shrink: 0;
+    width: 300px;
+    height: auto; /* Adjust the width as needed */
+    padding:10%;
+    box-shadow: 0 0 5px 0 grey;
+  }
+  .Project-head{
+      color: #000000;
+      font-size: 2em;
+      text-align: center;
+  }
+   .card {
+    margin-right: 20px; /* Adjust the margin as needed */
+  }
+  .Projects-title h3 {
+    color: #000000;
+    font-size: 2em;
+    text-align: center;
+  }
+  
+  /* For smaller screens (max-width: 768px), adjust the font size and padding */
+  @media (max-width: 768px) {
+    .Projects-title h3 {
+      font-size: 1.5em;
+      padding-top: 10px; /* Adjust the padding as needed */
+    }
+  }
+  .Projects{
+    margin-top: 0;
+  }

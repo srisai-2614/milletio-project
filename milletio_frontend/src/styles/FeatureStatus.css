@@ -1,0 +1,145 @@
+/* FeatureStatus.css */
+.feature-status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    margin: 1rem;
+    border-width: 2px;
+    border-style: dashed;
+    border-radius: 0.5rem;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .feature-status-icon {
+    margin-bottom: 0.75rem;
+  }
+  
+  .feature-status-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  
+  .feature-status-message {
+    color: #4b5563;
+    margin-bottom: 1rem;
+    max-width: 28rem;
+  }
+  
+  .feature-status-time {
+    background-color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-width: 1px;
+    border-style: solid;
+    border-opacity: 0.5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Status-specific styles */
+  .feature-status-development {
+    background-color: #fffbeb;
+    border-color: #fbbf24;
+  }
+  
+  .feature-status-development .feature-status-icon {
+    color: #f59e0b;
+  }
+  
+  .feature-status-development .feature-status-title {
+    color: #b45309;
+  }
+  
+  .feature-status-development .feature-status-time {
+    border-color: #fbbf24;
+  }
+  
+  .feature-status-coming-soon {
+    background-color: #eff6ff;
+    border-color: #60a5fa;
+  }
+  
+  .feature-status-coming-soon .feature-status-icon {
+    color: #3b82f6;
+  }
+  
+  .feature-status-coming-soon .feature-status-title {
+    color: #1d4ed8;
+  }
+  
+  .feature-status-coming-soon .feature-status-time {
+    border-color: #60a5fa;
+  }
+  
+  .feature-status-beta {
+    background-color: #faf5ff;
+    border-color: #a855f7;
+  }
+  
+  .feature-status-beta .feature-status-icon {
+    color: #8b5cf6;
+  }
+  
+  .feature-status-beta .feature-status-title {
+    color: #7e22ce;
+  }
+  
+  .feature-status-beta .feature-status-time {
+    border-color: #a855f7;
+  }
+  
+  .feature-status-maintenance {
+    background-color: #fff7ed;
+    border-color: #fb923c;
+  }
+  
+  .feature-status-maintenance .feature-status-icon {
+    color: #f97316;
+  }
+  
+  .feature-status-maintenance .feature-status-title {
+    color: #c2410c;
+  }
+  
+  .feature-status-maintenance .feature-status-time {
+    border-color: #fb923c;
+  }
+  
+  .feature-status-completed {
+    background-color: #f0fdf4;
+    border-color: #4ade80;
+  }
+  
+  .feature-status-completed .feature-status-icon {
+    color: #22c55e;
+  }
+  
+  .feature-status-completed .feature-status-title {
+    color: #15803d;
+  }
+  
+  .feature-status-completed .feature-status-time {
+    border-color: #4ade80;
+  }
+  
+  .feature-status-locked {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+  }
+  
+  .feature-status-locked .feature-status-icon {
+    color: #6b7280;
+  }
+  
+  .feature-status-locked .feature-status-title {
+    color: #374151;
+  }
+  
+  .feature-status-locked .feature-status-time {
+    border-color: #9ca3af;
+  }

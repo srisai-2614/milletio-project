@@ -1,0 +1,35 @@
+/* CartIcon.css */
+.cart-icon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .cart-icon {
+    position: relative;
+    padding: 8px;
+    cursor: pointer;
+  }
+  
+  .cart-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .cart-counter {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #f44336;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+  }

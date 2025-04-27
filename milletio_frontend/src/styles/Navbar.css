@@ -1,0 +1,153 @@
+/* Navbar.css */
+.navbar {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 70px; /* Slightly increased for larger logo */
+  padding: 0 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.navbar-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.brand-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.Logo {
+  height: 7vh; /* Increased logo size */
+  width: auto;
+  margin: 0;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.left-nav a,
+.right-nav a {
+  margin-left: 1.5rem;
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.nav-heading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+/* Underline animation for nav headings */
+.nav-heading::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #333;
+  transition: width 0.3s ease;
+}
+
+.left-nav a:hover .nav-heading {
+  color: #000;
+}
+
+.left-nav a:hover .nav-heading::after {
+  width: 100%;
+}
+
+.right-nav a {
+  margin-left: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.right-nav a:hover {
+  transform: scale(1.1);
+}
+
+.mobile-menu-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  display: none;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    height: 60px;
+  }
+
+  .Logo {
+    height: 40px;
+  }
+
+  .mobile-menu-icon {
+    display: block;
+  }
+
+  .left-nav {
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: white;
+    transform: translateY(-150%);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .left-nav.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    padding: 1rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .left-nav a {
+    margin: 0.75rem 1.5rem;
+  }
+  
+  .nav-heading::after {
+    bottom: -2px;
+  }
+}

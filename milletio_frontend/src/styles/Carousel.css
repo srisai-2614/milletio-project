@@ -1,0 +1,141 @@
+.carousel_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 95vw;
+  margin-bottom: 2rem;
+}
+
+.carousel {
+  position: relative;
+  max-width: 95%;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide all items by default */
+.carousel-item-container {
+  display: none;
+  width: 100%;
+}
+
+/* Show only active item */
+.carousel-item-container.active {
+  display: block;
+  animation-duration: 0.6s;
+}
+
+/* Animation for fading in from right */
+.carousel-item-container.active.next {
+  animation-name: fadeInRight;
+}
+
+/* Animation for fading in from left */
+.carousel-item-container.active.prev {
+  animation-name: fadeInLeft;
+}
+
+.carousel-item {
+  width: 100%;
+  max-height: 90vh;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1;
+  font-size: 24px;
+  transition: background-color 0.3s ease;
+}
+
+.carousel-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-btn.prev {
+  left: 10px;
+}
+
+.carousel-btn.next {
+  right: 10px;
+}
+
+.carousel-dots {
+  text-align: center;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.dot {
+  height: 12px;
+  width: 12px;
+  margin: 0 5px;
+  background-color: #7b7373;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.dot:hover {
+  background-color: #555;
+}
+
+.dot.active {
+  background-color: #333;
+  transform: scale(1.2);
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel_container {
+    width: 90vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .carousel {
+    width: 100%;
+  }
+  .carousel-btn {
+    padding: 8px;
+    font-size: 20px;
+  }
+  .dot {
+    height: 10px;
+    width: 10px;
+    margin: 0 4px;
+  }
+}
