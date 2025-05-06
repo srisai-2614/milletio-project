@@ -1,8 +1,50 @@
-import { Alert } from '@coreui/coreui';
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 
 // Create context
 const CartContext = createContext();
+
+// Toast component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000); // Auto close after 3 seconds
+    
+    return () => clearTimeout(timer);
+  }, [onClose]);
+  
+  return (
+    <div className={`toast toast-${type}`} style={{
+      position: 'fixed',
+      top: '20px',
+      left: '20px',
+      backgroundColor: type === 'success' ? '#4CAF50' : '#f44336',
+      color: 'white',
+      padding: '15px',
+      borderRadius: '4px',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      zIndex: 1000,
+      minWidth: '250px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }}>
+      <span>{message}</span>
+      <button 
+        onClick={onClose}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'white',
+          fontSize: '16px',
+          cursor: 'pointer'
+        }}
+      >
+        ×
+      </button>
+    </div>
+  );
+};
 
 // Initial state
 const initialState = {
@@ -119,10 +161,31 @@ export const CartProvider = ({ children }) => {
   
   const [state, dispatch] = useReducer(cartReducer, savedCart);
   
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+  
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(state));
   }, [state]);
+  
+  // Hide toast function
+  const hideToast = () => {
+    setToast({ ...toast, show: false });
+  };
+  
+  // Show toast function
+  const showToast = (message, type = 'success') => {
+    setToast({
+      show: true,
+      message,
+      type
+    });
+  };
   
   // Action creators
   const addToCart = (product, quantity = 1) => {
@@ -130,13 +193,28 @@ export const CartProvider = ({ children }) => {
       type: ADD_TO_CART,
       payload: { ...product, quantity }
     });
+    
+    // Show toast notification
+    const isExisting = state.cartItems.some(item => item.id === product.id);
+    const message = isExisting 
+      ? `${product.name || 'Item'}'s quantity updated in cart`
+      : `${product.name || 'Item'} added to cart`;
+    
+    showToast(message, 'success');
   };
   
   const removeFromCart = (productId) => {
+    // Find the product first to reference in toast message
+    const product = state.cartItems.find(item => item.id === productId);
+    
     dispatch({
       type: REMOVE_FROM_CART,
       payload: productId
     });
+    
+    if (product) {
+      showToast(`${product.name || 'Item'} removed from cart`, 'success');
+    }
   };
   
   const updateQuantity = (productId, quantity) => {
@@ -148,6 +226,7 @@ export const CartProvider = ({ children }) => {
   
   const clearCart = () => {
     dispatch({ type: CLEAR_CART });
+    showToast('Cart has been cleared', 'success');
   };
   
   return (
@@ -159,6 +238,13 @@ export const CartProvider = ({ children }) => {
       clearCart
     }}>
       {children}
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </CartContext.Provider>
   );
 };

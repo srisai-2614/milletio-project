@@ -64,24 +64,6 @@ const ReviewData = [
     image: DefaultMaleAvatar,
     gender: "male"
   },
-  {
-    id: 5,
-    user: "Lakshmi Iyer",
-    productName: "Traditional Products",
-    rating: 5,
-    comment: "Living away from home, I miss traditional Indian foods. These mixes give me the authentic taste I crave with minimal effort. The quality and flavors are consistently excellent!",
-    image: DefaultFemaleAvatar,
-    gender: "female"
-  },
-  {
-    id: 6,
-    user: "Vivek Menon",
-    productName: "Health Foods",
-    rating: 5,
-    comment: "After my doctor recommended dietary changes, these products have made the transition so much easier. Delicious, convenient, and genuinely health-focused without compromising on taste.",
-    image: DefaultMaleAvatar,
-    gender: "male"
-  },
 ];
 
 export default ReviewData;

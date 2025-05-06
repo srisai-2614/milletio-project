@@ -4,8 +4,8 @@ import "../styles/Carousel.css";
 import "../styles/WhyMilletio.css";
 import slide1 from './assets/Poster_AllProductscombo.png';
 import slide2 from './assets/Multi_millet_video.mp4';
-import slide3 from './assets/nutri bars wedsite poster.png'
-import slide4 from './assets/Spinach_Dosa_video.mp4'
+import slide3 from './assets/nutri bars wedsite poster.png';
+import slide4 from './assets/Spinach_Dosa_video.mp4';
 import "../styles/BestProducts.css";
 import "../styles/ProductDetail.css";
 import ProductData from "../data/ProductData";
@@ -18,20 +18,126 @@ import ComboCarousel from "../components/ComboCarousel";
 import { Card } from "flowbite-react";
 import Article from "../components/Article";
 import recipeList from "../data/ReceipeList";
+import WhyChooseMillet from "../components/WhyChooseMillet";
+import { useCart } from "../contexts/CartContext";
 
+// Define carousel items with proper product information
 const carouselItems = [
-  { type: "image", src: slide1, alt: "Offer 1" },
-  { type: "image", src: slide3, alt: "Offer 2" },
-  { type: "video", src: slide2, alt: "Promo Video" },
-  { type: "video", src: slide4, alt: "Promo Video" }
+  { 
+    type: "image", 
+    src: slide1, 
+    alt: "Offer 1", 
+    itemType: "combo", 
+    id: 4,
+    name: "Nutri Bar Power Pack",
+    price: 990,
+    originalPrice: 1099
+  },
+  { 
+    type: "image", 
+    src: slide3, 
+    alt: "Offer 2", 
+    itemType: "combo", 
+    id: 5,
+    name: "Nutri Bars Combo",
+    price: 499,
+    originalPrice: 550
+  },
+  { 
+    type: "video", 
+    src: slide2, 
+    alt: "Promo Video", 
+    itemType: "product", 
+    id: 3,
+    name: "Multi Millet Mix",
+    price: 149,
+    originalPrice: 169,
+    weight: "200g"
+  },
+  { 
+    type: "video", 
+    src: slide4, 
+    alt: "Promo Video", 
+    itemType: "product", 
+    id: 4,
+    name: "Spinach Dosa Mix",
+    price: 119,
+    originalPrice: 139,
+    weight: "200g"
+  }
 ];
-
 
 const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState('');
   const [animating, setAnimating] = useState(false);
- 
+  
+  // Get addToCart function from context
+  const { addToCart } = useCart();
+
+  // Handle adding carousel item to cart
+  const handleAddToCart = (item) => {
+    if (!item) return;
+    
+    // Different handling based on item type
+    if (item.itemType === "combo") {
+      // For combos, we'll try to find the combo in ProductData
+      const comboData = ProductData.comboData.find(combo => combo.id === item.id);
+      
+      if (comboData) {
+        const comboProduct = {
+          id: `combo-${comboData.id}`,
+          name: comboData.name,
+          price: comboData.price,
+          regularPrice: comboData.regularPrice,
+          image: comboData.components[0]?.image || item.src, 
+          weight: `${comboData.components.length} items`,
+          type: 'combo',
+          quantity: 1,
+          components: comboData.components,
+          freeItems: comboData.freeItems || []
+        };
+        addToCart(comboProduct);
+      } else {
+        // Fallback if combo not found in ProductData
+        addToCart({
+          id: `combo-${item.id}`,
+          name: item.name,
+          price: item.price,
+          originalPrice: item.originalPrice,
+          image: item.src,
+          weight: "Combo Package",
+          type: 'combo',
+          quantity: 1
+        });
+      }
+    } else {
+      // For regular products
+      const product = ProductData.products.find(p => p.id === item.id);
+      
+      if (product) {
+        // Use the full product data from ProductData
+        addToCart({
+          ...product,
+          quantity: 1 
+        });
+      } else {
+        // Fallback if product not found in ProductData
+        addToCart({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          originalPrice: item.originalPrice,
+          image: item.src,
+          weight: item.weight || "Standard",
+          quantity: 1
+        });
+      }
+    }
+    
+    console.log("Added to cart:", item.name);
+  };
+
   const goToPrev = () => {
     if (animating) return;
     setAnimating(true);
@@ -62,12 +168,8 @@ const Home = () => {
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
-  const handleAddToCart = (product) => {
-    alert(`${product.name} added to cart!`);
-  };
-
   return (
-    
+    <section className="page">
     <section className="page">
       <div className="carousel_container">
         <div className="carousel">
@@ -81,6 +183,19 @@ const Home = () => {
               ) : (
                 <video src={item.src} className="carousel-item" autoPlay muted loop />
               )}
+              
+              {/* Product Info */}
+              <div className="product-info">
+                <div className="product-name">{item.name}</div>
+              </div>
+              
+              {/* Add to Cart Button */}
+              <button 
+                className="add-btn"
+                onClick={() => handleAddToCart(carouselItems[currentIndex])}
+              >
+                Add to Cart
+              </button>
             </div>
           ))}
           <button className="carousel-btn prev" onClick={goToPrev}>&#10094;</button>
@@ -97,23 +212,14 @@ const Home = () => {
           ))}
         </div>
       </div>
-      <div className="why-milletio-grid">
-        <div className="why-card highlight-card">
-          <h2>Why Choose Milletio?</h2>
-        </div>
-
-        <div className="feature-card engaging">🍽️ Easy to Make<br /><span>Quick recipes that fit your modern lifestyle.</span></div>
-<div className="feature-card engaging">🚫 No Preservatives<br /><span>Pure goodness with zero artificial additives.</span></div>
-<div className="feature-card engaging">🌾 Gluten Free<br /><span>Perfect for sensitive diets without compromise.</span></div>
-<div className="feature-card engaging">🏡 Local Sourcing<br /><span>Empowering communities by supporting local farmers.</span></div>
-<div className="feature-card engaging">💪 Health Focused<br /><span>Millets that fuel wellness and vitality.</span></div>
-<div className="feature-card engaging">🌍 Ancient Superfood<br /><span>Celebrating timeless nutrition for modern living.</span></div>
-      </div>
+    </section>
+      <section className="page">
+      <WhyChooseMillet/>
+      </section>
 
       <section className="page" >
         <BestSellersSection
             products={ProductData.products}
-             onAddToCart={handleAddToCart}
         />
       </section>
       <section>

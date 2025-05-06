@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from "../contexts/CartContext";
@@ -8,6 +8,7 @@ const Cart = () => {
   const { cartItems, cartTotal, itemCount, shippingCharge, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isCheckout, setIsCheckout] = useState(false);
   const [orderProcessing, setOrderProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,9 +17,21 @@ const Cart = () => {
     city: '',
     state: '',
     pincode: '',
-    paymentMethod: 'cashOnDelivery' // Add default payment method
+    paymentMethod: 'online' // Default payment method as online
   });
   const navigate = useNavigate();
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleQuantityChange = (id, newQuantity) => {
     if (newQuantity >= 1) {
@@ -34,19 +47,166 @@ const Cart = () => {
     });
   };
 
+  // Function to initialize Razorpay payment
+  const initializeRazorpayPayment = async () => {
+    setPaymentError(null);
+    
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Make sure Razorpay is loaded
+        if (!window.Razorpay) {
+          throw new Error("Razorpay SDK failed to load. Please check your internet connection.");
+        }
+        
+        // console.log("Creating Razorpay order...");
+        
+        // Create order on your backend
+        const response = await fetch('http://localhost:3001/api/payments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: Math.round((cartTotal + shippingCharge) * 100), // Razorpay expects amount in paise
+            receipt: `receipt_${Date.now()}`
+          }),
+          credentials: 'include' // Include credentials to handle CORS issues
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Order creation failed:", errorData);
+          throw new Error(errorData.message || 'Failed to create payment order');
+        }
+        
+        const result = await response.json();
+        // console.log("Order created successfully:", result);
+        
+        // Use environment variable or fallback for key
+        const key = import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_live_mfd5n48kLJDkSU"; // Replace with your actual key
+        
+        // Configure Razorpay options
+        const options = {
+          key: key,
+          amount: Math.round((cartTotal + shippingCharge) * 100), // Amount in paise
+          currency: 'INR',
+          name: 'Milleti Global Grain',
+          description: 'Order Payment',
+          order_id: result.id,
+          handler: async function (response) {
+            // console.log("Payment successful, verifying...", response);
+            try {
+              // Verify payment on backend
+              const verifyResponse = await fetch('http://localhost:3001/api/verify-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature
+                }),
+                credentials: 'include' // Include credentials for CORS
+              });
+              
+              if (!verifyResponse.ok) {
+                const errorData = await verifyResponse.json();
+                throw new Error(errorData.message || 'Payment verification failed');
+              }
+              
+              const verifyResult = await verifyResponse.json();
+              
+              if (!verifyResult.success) {
+                throw new Error('Payment verification failed');
+              }
+              
+              // console.log("Payment verified successfully");
+              
+              // Handle successful payment
+              resolve({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              });
+            } catch (error) {
+              console.error("Payment verification error:", error);
+              setPaymentError(error.message);
+              reject(error);
+            }
+          },
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.phone
+          },
+          notes: {
+            address: formData.address
+          },
+          theme: {
+            color: '#3399cc'
+          },
+          modal: {
+            ondismiss: function() {
+              setPaymentError("Payment cancelled");
+              reject(new Error('Payment cancelled by user'));
+            }
+          }
+        };
+        
+        // console.log("Initializing Razorpay with options:", options);
+        
+        // Initialize Razorpay
+        const razorpay = new window.Razorpay(options);
+        razorpay.on('payment.failed', function (response) {
+          setPaymentError(`Payment failed: ${response.error.description}`);
+          reject(new Error(`Payment failed: ${response.error.description}`));
+        });
+        
+        razorpay.open();
+      } catch (error) {
+        console.error('Razorpay initialization error:', error);
+        setPaymentError(error.message);
+        reject(error);
+      }
+    });
+  };
+
   const handleCheckout = async (e) => {
     e.preventDefault();
     setOrderProcessing(true);
+    setPaymentError(null);
     
     try {
-      // Prepare order data
+      // console.log("Starting checkout process...");
+      
+      // Process payment with Razorpay
+      let paymentData;
+      try {
+        paymentData = await initializeRazorpayPayment();
+      } catch (error) {
+        console.error('Payment failed:', error);
+        setPaymentError(error.message || 'Payment failed or was cancelled');
+        setOrderProcessing(false);
+        return;
+      }
+      
+      // Prepare order data with payment info
       const orderData = {
         items: cartItems,
         total: cartTotal + shippingCharge,
         shipping: shippingCharge,
         customer: formData,
-        orderDate: new Date().toISOString()
+        orderDate: new Date().toISOString(),
+        payment: {
+          method: 'razorpay',
+          transactionId: paymentData.razorpay_payment_id,
+          orderId: paymentData.razorpay_order_id,
+          signature: paymentData.razorpay_signature
+        }
       };
+      
+      // console.log("Processing order with data:", orderData);
       
       // Send order data to your backend API
       const response = await fetch('http://localhost:3001/api/orders', {
@@ -56,22 +216,37 @@ const Cart = () => {
         },
         body: JSON.stringify({
           order: orderData,
-          sendEmailTo: 'bollavaramnarasimha@gmail.com' // Replace with your store's email
+          sendEmailTo: 'milletioglobalgrain@gmail.com' // Replace with your store's email
         }),
+        credentials: 'include' // Include credentials for CORS
       });
       
-      const result = await response.json();
-      
       if (!response.ok) {
-        throw new Error(result.message || 'Order could not be processed');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Order could not be processed');
       }
       
-      // Order successfully placed
-      alert('Order placed successfully! A confirmation has been sent to your email.');
+      const result = await response.json();
+      // console.log("Order processed successfully:", result);
+      
+      // Add the order number to the order data
+      const orderWithNumber = { 
+        ...orderData, 
+        orderNumber: result.orderNumber 
+      };
+      
+      // Order successfully placed - clear cart and redirect
       clearCart();
-      navigate('/order-confirmation', { state: { orderData, orderNumber: result.orderNumber } });
+      
+      // Redirect to order confirmation page with order data
+      navigate('/order-confirmation', { 
+        state: { 
+          orderData: orderWithNumber, 
+          orderNumber: result.orderNumber 
+        } 
+      });
     } catch (error) {
-      alert('There was an error processing your order. Please try again.');
+      setPaymentError(error.message || 'There was an error processing your order');
       console.error('Order error:', error);
     } finally {
       setOrderProcessing(false);
@@ -92,6 +267,13 @@ const Cart = () => {
   return (
     <div className="cart-container">
       <h2>Your Cart ({itemCount} items)</h2>
+      
+      {paymentError && (
+        <div className="payment-error-alert">
+          <p>{paymentError}</p>
+          <button onClick={() => setPaymentError(null)}>×</button>
+        </div>
+      )}
       
       {!isCheckout ? (
         <>
@@ -273,33 +455,9 @@ const Cart = () => {
                 </div>
               </div>
               
-              <div className="form-group">
-                <label>Payment Method</label>
-                <div className="payment-options">
-                  <div className="payment-option">
-                    <input
-                      type="radio"
-                      id="cashOnDelivery"
-                      name="paymentMethod"
-                      value="cashOnDelivery"
-                      checked={formData.paymentMethod === 'cashOnDelivery'}
-                      onChange={handleInputChange}
-                    />
-                    <label htmlFor="cashOnDelivery">Cash on Delivery</label>
-                  </div>
-                  
-                  <div className="payment-option">
-                    <input
-                      type="radio"
-                      id="onlinePayment"
-                      name="paymentMethod"
-                      value="onlinePayment"
-                      checked={formData.paymentMethod === 'onlinePayment'}
-                      onChange={handleInputChange}
-                    />
-                    <label htmlFor="onlinePayment">Online Payment</label>
-                  </div>
-                </div>
+              <div className="form-group payment-method-info">
+                <h4>Payment Method: Online Payment (Razorpay)</h4>
+                <p>Secure online payment through Razorpay. You'll be redirected to complete your payment after clicking "Place Order".</p>
               </div>
               
               <div className="checkout-buttons">
@@ -315,7 +473,7 @@ const Cart = () => {
                   className="place-order-btn"
                   disabled={orderProcessing}
                 >
-                  {orderProcessing ? 'Processing...' : 'Place Order'}
+                  {orderProcessing ? 'Processing...' : 'Place Order & Pay'}
                 </button>
               </div>
             </form>

@@ -1,4 +1,6 @@
 /* CartIcon.css */
+
+ /* CartIcon.css */
 .cart-icon-container {
     position: relative;
     display: flex;
@@ -11,11 +13,6 @@
     position: relative;
     padding: 8px;
     cursor: pointer;
-  }
-  
-  .cart-icon svg {
-    width: 24px;
-    height: 24px;
   }
   
   .cart-counter {

@@ -1,98 +1,125 @@
-import React from 'react';
-import { Link, useLocation, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '../styles/OrderConfirmation.css';
 
 const OrderConfirmation = () => {
   const location = useLocation();
-  const orderData = location.state?.orderData;
-  
-  // If someone navigates directly to this page without order data, redirect to home
-  if (!orderData) {
-    return <Navigate to="/" replace />;
+  const { orderData, orderNumber } = location.state || {};
+
+  useEffect(() => {
+    // Scroll to top on component mount
+    window.scrollTo(0, 0);
+    
+    // If no order data is found, redirect to home
+    if (!orderData && !orderNumber) {
+      // You could redirect here or show an error message
+      console.error('No order data found');
+    }
+  }, [orderData, orderNumber]);
+
+  // If no order data is available, show an error message
+  if (!orderData || !orderNumber) {
+    return (
+      <div className="order-confirmation-container">
+        <div className="confirmation-error">
+          <h2>Order Information Not Found</h2>
+          <p>We couldn't find information about your order. Please check your email for order confirmation or contact customer support.</p>
+          <Link to="/" className="back-home-btn">Return to Home</Link>
+        </div>
+      </div>
+    );
   }
-  
-  const { items, total, shipping, customer } = orderData;
-  
-  // Generate a random order ID
-  const orderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-  
+
+  const { items, total, shipping, customer, payment } = orderData;
+  const formattedDate = new Date().toLocaleDateString('en-IN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
   return (
-    <div className="order-confirmation-container">
-      <motion.div 
-        className="order-confirmation-card"
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="order-success-header">
-          <motion.div 
-            className="success-icon"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </motion.div>
-          <h2>Order Placed Successfully!</h2>
-          <p>Thank you for your purchase, {customer.name}!</p>
-          <p className="order-id">Order ID: {orderId}</p>
+    <motion.div 
+      className="order-confirmation-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="confirmation-header">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+          className="success-icon"
+        >
+          ✓
+        </motion.div>
+        <h2>Order Confirmed!</h2>
+        <p>Thank you for your purchase, {customer.name}</p>
+      </div>
+
+      <div className="order-details">
+        <div className="order-info-section">
+          <h3>Order Information</h3>
+          <p><strong>Order Number:</strong> #{orderNumber}</p>
+          <p><strong>Date:</strong> {formattedDate}</p>
+          <p><strong>Payment Method:</strong> Online Payment (Razorpay)</p>
+          {payment?.transactionId && (
+            <p><strong>Transaction ID:</strong> {payment.transactionId}</p>
+          )}
         </div>
-        
-        <div className="order-details-section">
-          <h3>Order Details</h3>
-          <div className="order-items-list">
-            {items.map(item => (
-              <div key={item.id} className="confirmation-order-item">
-                <div className="confirmation-item-info">
-                  <p>{item.name} × {item.quantity}</p>
-                  <p>₹{(item.price * item.quantity).toFixed(2)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="order-summary-totals">
-            <div className="total-row">
-              <span>Subtotal:</span>
-              <span>₹{(total - shipping).toFixed(2)}</span>
-            </div>
-            
-            <div className="total-row">
-              <span>Shipping:</span>
-              <span>{shipping > 0 ? `₹${shipping.toFixed(2)}` : 'FREE'}</span>
-            </div>
-            
-            <div className="total-row grand-total">
-              <span>Total:</span>
-              <span>₹{total.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="shipping-details-section">
+
+        <div className="shipping-info-section">
           <h3>Shipping Details</h3>
           <p>{customer.name}</p>
           <p>{customer.address}</p>
           <p>{customer.city}, {customer.state} - {customer.pincode}</p>
-          <p>Phone: {customer.phone}</p>
-          <p>Email: {customer.email}</p>
+          <p>{customer.phone}</p>
+          <p>{customer.email}</p>
         </div>
-        
-        <div className="payment-details-section">
-          <h3>Payment Method</h3>
-          <p>{customer.paymentMethod === 'cashOnDelivery' ? 'Cash on Delivery' : 'Online Payment'}</p>
+      </div>
+
+      <div className="order-items-summary">
+        <h3>Order Summary</h3>
+        <div className="ordered-items">
+          {items.map(item => (
+            <div key={item.id} className="ordered-item">
+              <div className="item-image">
+                <img src={item.images?.front || item.image} alt={item.name} />
+              </div>
+              <div className="item-details">
+                <h4>{item.name}</h4>
+                <p className="item-weight">{item.weight}</p>
+                <p className="item-quantity">Qty: {item.quantity}</p>
+              </div>
+              <p className="item-price">₹{(item.price * item.quantity).toFixed(2)}</p>
+            </div>
+          ))}
         </div>
-        
-        <div className="order-actions">
-          <Link to="/" className="back-to-home-btn">Back to Home</Link>
-          <Link to="/products" className="continue-shopping-btn">Continue Shopping</Link>
+
+        <div className="order-summary-totals">
+          <div className="total-row">
+            <span>Subtotal:</span>
+            <span>₹{(total - shipping).toFixed(2)}</span>
+          </div>
+          
+          <div className="total-row">
+            <span>Shipping:</span>
+            <span>{shipping > 0 ? `₹${shipping.toFixed(2)}` : 'FREE'}</span>
+          </div>
+          
+          <div className="total-row grand-total">
+            <span>Total:</span>
+            <span>₹{total.toFixed(2)}</span>
+          </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+
+      <div className="confirmation-actions">
+        <p>A confirmation email has been sent to <strong>{customer.email}</strong>.</p>
+        <Link to="/" className="back-home-btn">Continue Shopping</Link>
+      </div>
+    </motion.div>
   );
 };
 
